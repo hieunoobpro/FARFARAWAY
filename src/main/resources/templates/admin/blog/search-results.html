@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org"
+      th:replace="~{admin/layout/layout :: main-fragment(~{:: title}, ~{}, ~{:: .content-wrapper}, ~{:: #js})}">
+<head>
+  <title>Tất cả bài viết</title>
+</head>
+
+<body>
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-12">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a href="#">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item active">
+              Danh sách bài viết
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row py-2">
+        <div class="col-12">
+          <a href="/admin/blogs/create" type="button" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Viết bài
+          </a>
+          <a href="/admin" type="button" class="btn btn-info">
+            <i class="fas fa-redo"></i> Refresh
+          </a>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-body">
+              <form class="form" action="blogs/search?name=" method="GET">
+                <input type="text" name="title"  placeholder="Nhập tiêu đề">
+              </form>
+              <table class="table table-bordered table-hover">
+                <thead>
+                <tr>
+                  <th>Tiêu đề</th>
+                  <th>Tác giả</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tạo</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="blog : ${pageData.getContent()}">
+                  <td>
+                    <a th:href="@{/admin/blogs/{id}/detail (id=${blog.id})}" th:text="${blog.title}">Khai giảng khóa
+                      Java Spring Boot 12</a>
+                  </td>
+                  <td>
+                    <a href="#" th:text="${blog.user.name}">John Doe</a>
+                  </td>
+                  <td th:text="${blog.status ? 'Công khai' : 'Nháp'}">Công khai</td>
+                  <td th:text="${#temporals.format(blog.createdAt, 'dd-MM-YYYY')}">06-07-2022</td>
+                </tr>
+                </tbody>
+              </table>
+
+              <div class="d-flex justify-content-center mt-3" id="pagination" th:if="${pageData.getTotalPages() != 1}">
+                <ul class="pagination mb-0">
+                  <li class="paginate_button page-item previous"
+                      th:classappend="${currentPage == 1 ? 'disabled' : ''}"
+                      id="example2_previous">
+                    <a th:href="@{/admin/blogs (page=${currentPage - 1})}"
+                       class="page-link">Previous</a>
+                  </li>
+                  <li class="paginate_button page-item"
+                      th:classappend="${number == currentPage ? 'active' : ''}"
+                      th:each="number : ${#numbers.sequence(1, pageData.totalPages)}">
+                    <a th:href="@{/admin/blogs (page=${number})}"
+                       class="page-link"
+                       th:text="${number}">1</a>
+                  </li>
+                  <li class="paginate_button page-item next"
+                      th:classappend="${currentPage == pageData.totalPages ? 'disabled' : ''}"
+                      id="example2_next">
+                    <a th:href="@{/admin/blogs (page=${currentPage + 1})}"
+                       class="page-link">Next</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<th:block id="js">
+  <script th:inline="javascript">
+    const pageData = [[${pageData}]];
+    const currentPage = [[${currentPage}]];
+
+    console.log(pageData);
+    console.log(currentPage);
+  </script>
+</th:block>
+</body>
+
+</html>

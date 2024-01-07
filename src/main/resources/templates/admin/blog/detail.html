@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org"
+      th:replace="~{admin/layout/layout :: main-fragment(~{:: title}, ~{:: #css}, ~{:: .content-wrapper}, ~{:: #js})}">
+
+<head>
+    <title>Chi tiết bài viết</title>
+
+    <th:block id="css">
+        <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css"/>
+
+        <link rel="stylesheet" th:href="@{/admin-lte/plugins/select2/css/select2.min.css}"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/paginationjs/2.6.0/pagination.min.css"
+              integrity="sha512-K1k7jSn9RDKEcn/ugqVVvWYu0bcS3q1w6m/5pQSnrj0bCfIqF6Wk49lkmckSb4wglvTP9V17LtS0q0XxYccXbg=="
+              crossorigin="anonymous" referrerpolicy="no-referrer"/>
+
+        <link rel="stylesheet" th:href="@{/admin-lte/dist/css/style.css}">
+
+        <style>
+            .modal-dialog {
+                max-width: 1000px;
+            }
+
+            .image-container {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                grid-gap: 10px;
+            }
+
+            .image-item {
+                height: 150px;
+                border: 2px solid #eee;
+            }
+
+            .image-item.selected {
+                border-color: red !important;
+                border-width: 4px !important;
+            }
+
+            .image-item img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        </style>
+    </th:block>
+</head>
+
+<body>
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/admin/blogs">Dashboard</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/admin/blogs">Blog</a>
+                        </li>
+                        <li class="breadcrumb-item active" th:text="${blog.title}">
+                            Thực hành làm ứng dụng Meal Finder API
+                            với Javascript (Phần 2)
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row py-2">
+                <div class="col-6">
+                    <a href="/admin/blogs" type="button" class="btn btn-default">
+                        <i class="fas fa-chevron-left"></i> Quay lại
+                    </a>
+                    <button type="button" class="btn btn-info px-4" id="btn-update">
+                        Lưu
+                    </button>
+                </div>
+
+                <div class="col-6 d-flex justify-content-end">
+                    <button type="button" class="btn btn-danger px-4" id="btn-delete">
+                        Xóa
+                    </button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label>Tiêu đề</label>
+                                        <input type="text" class="form-control" id="title" th:value="${blog.title}"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mô tả ngắn</label>
+                                        <input type="text" class="form-control" id="description" th:value="${blog.description}"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Nội dung</label>
+                                        <textarea id="content" class="form-control" rows="3"
+                                                  th:text="${blog.content}"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Trạng thái</label>
+                                        <select id="status" class="form-control">
+                                            <option value="false" th:selected="not ${blog.status}">
+                                                Nháp
+                                            </option>
+                                            <option value="true" th:selected="${blog.status}">
+                                                Công khai
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="thumbnail-preview-container mb-3">
+                                            <img th:src="${blog.thumbnail != null ? blog.thumbnail : 'https://placehold.co/600x400'}"
+                                                 alt="" id="thumbnail"/>
+                                        </div>
+                                        <button type="button" class="btn btn-info btn-flat" data-toggle="modal"
+                                                data-target="#modal-xl" id="btn-modal-image">
+                                            Chọn hình ảnh
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal fade" id="modal-xl" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Danh sách ảnh</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <button class="btn btn-success" id="btn-chose-image" disabled>Chọn ảnh</button>
+
+                            <label for="avatar" class="btn btn-warning mb-0">Upload ảnh</label>
+                            <input type="file" id="avatar" class="d-none">
+                        </div>
+                        <div>
+                            <button class="btn btn-danger" id="btn-delete-image" disabled>Xóa ảnh</button>
+                        </div>
+                    </div>
+                    <!-- Hiển thị danh sách ảnh -->
+                    <div class="image-container mt-4 mb-4">
+                        <div class="image-item">
+                            <img src="https://images.unsplash.com/photo-1656918931725-2f9d9fce4acb?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHw4fHx8ZW58MHx8fHw%3D&auto=format&fit=crop&w=800&q=60"
+                                 alt="">
+                        </div>
+                    </div>
+
+                    <!-- Hiển thị phần phân trang -->
+                    <div class="pagination-container d-flex justify-content-center">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block id="js">
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/highlight.js/latest/highlight.min.js"></script>
+
+    <script th:src="@{/admin-lte/plugins/select2/js/select2.full.min.js}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paginationjs/2.6.0/pagination.min.js"
+            integrity="sha512-GzbaI5EsNzdEUq6/2XLYpr1y9CUZRIVsUeWTAFgULtQa5jZ3Nug8i0nZKM6jp9NffBCZhymPPQFcF0DK+JkRpw=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script th:inline="javascript">
+        const blog = [[${blog}]];
+        let imageList = [[${imageList}]];
+        console.log(blog);
+        console.log(imageList);
+
+        $(".select2").select2();
+
+        // Initialize editor
+        const easyMDE = new EasyMDE({
+            element: document.getElementById("content"),
+            spellChecker: false,
+            maxHeight: "300px",
+            renderingConfig: {
+                codeSyntaxHighlighting: true,
+            },
+        });
+
+        const imageContainerEl = document.querySelector(".image-container");
+        const btnChoseImage = document.getElementById("btn-chose-image");
+        const btnDeleteImage = document.getElementById("btn-delete-image");
+        const inputImageEl = document.getElementById("avatar");
+        const thumbnailPreviewEl = document.getElementById("thumbnail");
+
+        // Render image
+        const renderImageList = (images) => {
+            let html = "";
+            images.forEach(image => {
+                html += `
+                    <div class="image-item" onclick="choseImage(this)" data-id="${image.id}">
+                        <img src="/api/v1/images/${image.id}" alt="">
+                    </div>
+                `
+            })
+            imageContainerEl.innerHTML = html;
+        }
+
+        // Render pagination
+        const renderPagination = (imageList) => {
+            console.log("Render Pagination : ", imageList)
+            $('.pagination-container').pagination({
+                dataSource: imageList,
+                pageSize: 8,
+                callback: function (data, pagination) {
+                    renderImageList(data);
+                }
+            })
+        }
+
+        // Upload file
+        inputImageEl.addEventListener('change', (e) => {
+            // Lấy thông tin file upload
+            const file = e.target.files[0];
+
+            // Tạo form data
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // call api
+            fetch(`/api/v1/admin/images`, {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    imageList.unshift(data);
+                    renderPagination(imageList);
+                })
+                .catch(err => {
+                    console.log(err);
+                })
+        })
+
+        // Xử lý chọn ảnh
+        const choseImage = el => {
+            const selectedEl = document.querySelector('.image-item.selected');
+            if (selectedEl) {
+                selectedEl.classList.remove('selected');
+            }
+            el.classList.add('selected');
+
+            btnChoseImage.disabled = false;
+            btnDeleteImage.disabled = false;
+        }
+
+        // Xóa ảnh
+        btnDeleteImage.addEventListener('click', async () => {
+            const selectedEl = document.querySelector('.image-item.selected');
+            const imageId = selectedEl.dataset.id;
+            console.log(typeof imageId)
+
+            try {
+                await fetch(`/api/v1/admin/images/${imageId}`, {
+                    method: 'DELETE'
+                })
+                console.log("Before", imageList)
+                imageList = imageList.filter(image => image.id !== Number(imageId));
+                console.log("After", imageList)
+                renderPagination(imageList);
+
+                btnChoseImage.disabled = true;
+                btnDeleteImage.disabled = true;
+            } catch (error) {
+                console.log(error)
+            }
+        })
+
+        // Chọn ảnh cho bài viết
+        btnChoseImage.addEventListener('click', () => {
+            const selectedEl = document.querySelector('.image-item.selected');
+            const imageId = selectedEl.dataset.id;
+
+            thumbnailPreviewEl.src = `/api/v1/images/${imageId}`;
+            $('#modal-xl').modal('hide');
+        })
+
+        // Tạo bài viết -> click button -> request -> response -> chuyển hướng qua trang chi tiết của bài viết đó
+        const btnUpdate = document.getElementById("btn-update");
+        const title = document.getElementById("title");
+        const description = document.getElementById("description");
+        const status = document.getElementById("status");
+
+        btnUpdate.addEventListener("click", async () => {
+            // Build request body
+            const data = {
+                title: title.value,
+                description: description.value,
+                content: easyMDE.value(),
+                status: status.value === "true",
+                thumbnail: thumbnailPreviewEl.src
+            };
+            console.log(data);
+
+            try {
+                let res = await axios.put("/admin/blog/" + blog.id, data);
+                if (res.status === 200) {
+                    toastr.success("Cập nhật bài viết thành công");
+                } else {
+                    toastr.error("Cập nhật bài viết thất bại");
+                }
+            } catch (e) {
+                console.log(e);
+                toastr.error(e.response.data.message);
+            }
+        });
+
+        // Xóa bài viết
+        const btnDelete = document.getElementById("btn-delete");
+        btnDelete.addEventListener("click", async () => {
+            const isDelete = confirm("Bạn có chắc chắn muốn xóa bài viết này không?");
+            if (!isDelete) return;
+            try {
+                let res = await axios.delete("/admin/blog/" + blog.id);
+                if (res.status === 204) {
+                    toastr.success("Xóa bài viết thành công");
+                    setTimeout(() => {
+                        window.location.href = "/admin/blogs";
+                    }, 1500)
+                } else {
+                    toastr.error("Xóa bài viết thất bại");
+                }
+            } catch (e) {
+                console.log(e);
+                toastr.error(e.response.data.message);
+            }
+        });
+
+        // Vừa vào trang thì render pagination
+        renderPagination(imageList);
+    </script>
+</th:block>
+
+</body>
+
+</html>

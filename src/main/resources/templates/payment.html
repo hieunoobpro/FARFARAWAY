@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="/css/indexStyle.css"/>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/cosmo/bootstrap.min.css"/>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="/javascrip/farJVS.js"></script>
+  <title>Thanh toán tour du lịch</title>
+</head>
+<body>
+<!--===========Nav Bar=================-->
+<section class="nav-bar">
+  <a href="/"><div class="logo">Far Far Away</div></a>
+  <ul class="menu">
+    <li><a href="/">home</a></li>
+    <li><a href="/tour">tours</a></li>
+    <li><a href="#">history</a></li>
+    <li><a href="/blog">blog</a></li>
+    <li><a href="#">contact us</a></li>
+    <li>
+      <th:block sec:authorize="not isAuthenticated()">
+        <a href="/login">Login</a>
+      </th:block>
+
+      <th:block sec:authorize="isAuthenticated()">
+        <div class="avatar-container">
+          <image th:src="${#authentication.principal.getAvatar()}" th:alt="Avatar" width="40" height="40" style="border-radius: 50%" onclick="toggleNavbar()" ></image>
+          <div class="vertical-navbar" id="verticalNavbar">
+            <ul>
+              <li><a href="/profile" style="color: #00bc8c">Hồ sơ</a></li>
+              <li>
+                <form th:action="@{/logout}" method="post">
+                  <button type="submit">Đăng xuất</button>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </th:block>
+    </li>
+
+  </ul>
+  </div>
+</section>
+<!--===========Content=================-->
+<h1>Xác nhận thanh toán tour du lịch</h1>
+<h1>Thông tin thanh toán</h1>
+<p>Tên khách hàng: <span th:text="${customerName}"></span></p>
+<p>Email: <span th:text="${email}"></span></p>
+<p>Số điện thoại: <span th:text="${phone}"></span></p>
+<p>Ngày khởi hành: <span th:text="${date}"></span></p>
+<p>Tên tour: <span th:text="${tourName}"></span></p>
+<p>Số tiền thanh toán: <span th:text="${tourPrice}"></span></p>
+<!-- Hiển thị thông tin tour và chi tiết thanh toán -->
+<!--===========Footer=================-->
+<div class="footer">
+  <div class="links">
+    <h3>Quick Links</h3>
+    <ul>
+      <li>Offers & Discounts</li>
+      <li>Get Coupon</li>
+      <li>Contact Us</li>
+      <li>About</li>
+    </ul>
+  </div>
+  <div class="links">
+    <h3>New Products</h3>
+    <ul>
+      <li>Woman Cloth</li>
+      <li>Fashion Accessories</li>
+      <li>Man Accessories</li>
+      <li>Rubber made Toys</li>
+    </ul>
+  </div>
+  <div class="links">
+    <h3>Support</h3>
+    <ul>
+      <li>Frequently Asked Questions</li>
+      <li>Report a Payment Issue</li>
+      <li>Terms & Conditions</li>
+      <li>Privacy Policy</li>
+    </ul>
+  </div>
+</div>
+
+</body>
+</html>

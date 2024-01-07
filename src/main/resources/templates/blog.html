@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/css/indexStyle.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/cosmo/bootstrap.min.css" />
+    <script src= "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" ></script>
+    <script src= "/javascrip/farJVS.js"></script>
+    <title>Blog</title>
+    <style>
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .thumbnail-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .thumbnail {
+            max-width: 100%;
+        }
+
+        .separator {
+            color: #999;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+<!--===========Nav Bar=================-->
+<section class="nav-bar">
+    <a href="/"><div class="logo">Far Far Away</div></a>
+    <ul class="menu">
+        <li><a href="/">home</a></li>
+        <li><a href="/tour">tours</a></li>
+        <li><a href="#">history</a></li>
+        <li><a href="/blog">blog</a></li>
+        <li><a href="#">contact us</a></li>
+        <li>
+            <th:block sec:authorize="not isAuthenticated()">
+                <a href="/login">Login</a>
+            </th:block>
+
+            <th:block sec:authorize="isAuthenticated()">
+                <div class="avatar-container">
+                    <image th:src="${#authentication.principal.getAvatar()}" th:alt="Avatar" width="40" height="40" style="border-radius: 50%" onclick="toggleNavbar()" ></image>
+                    <div class="vertical-navbar" id="verticalNavbar">
+                        <ul>
+                            <li><a href="/profile" style="color: #00bc8c">Hồ sơ</a></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post">
+                                    <button type="submit">Đăng xuất</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </th:block>
+        </li>
+
+    </ul>
+    </div>
+</section>
+
+
+<!--===========Content=================-->
+<div class="content-wrapper">
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                                <tbody>
+                                <tr th:each="blog : ${pageData.getContent()}">
+                                    <h2><a th:href="@{/blog-detail(id=${blog.id})}" th:text="${blog.title}"></a></h2>
+                                    <p th:text="${blog.description}"></p>
+                                    <div th:if="${blog.thumbnail != null}" class="thumbnail-container">
+                                        <img class="thumbnail" th:src="${blog.thumbnail}" alt="Thumbnail">
+                                    </div>
+
+                                    <p class="separator">-------------------------------------------------------------------------------------------------------------------------------------</p>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <div class="d-flex justify-content-center mt-3" id="pagination" th:if="${pageData.getTotalPages() != 1}">
+                                <ul class="pagination mb-0">
+                                    <li class="paginate_button page-item previous"
+                                        th:classappend="${currentPage == 1 ? 'disabled' : ''}"
+                                        id="example2_previous">
+                                    </li>
+                                    <li class="paginate_button page-item"
+                                        th:classappend="${number == currentPage ? 'active' : ''}"
+                                        th:each="number : ${#numbers.sequence(1, pageData.totalPages)}">
+                                        <a th:href="@{/admin/blogs (page=${number})}"
+                                           class="page-link"
+                                           th:text="${number}">1</a>
+                                    </li>
+                                    <li class="paginate_button page-item next"
+                                        th:classappend="${currentPage == pageData.totalPages ? 'disabled' : ''}"
+                                        id="example2_next">
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<th:block id="js">
+    <script th:inline="javascript">
+        const pageData = [[${pageData}]];
+        const currentPage = [[${currentPage}]];
+
+        console.log(pageData);
+        console.log(currentPage);
+    </script>
+</th:block>
+
+<!--===========Footer=================-->
+<div class="footer">
+    <div class="links">
+        <h3>Quick Links</h3>
+        <ul>
+            <li>Offers & Discounts</li>
+            <li>Get Coupon</li>
+            <li>Contact Us</li>
+            <li>About</li>
+        </ul>
+    </div>
+    <div class="links">
+        <h3>New Products</h3>
+        <ul>
+            <li>Woman Cloth</li>
+            <li>Fashion Accessories</li>
+            <li>Man Accessories</li>
+            <li>Rubber made Toys</li>
+        </ul>
+    </div>
+    <div class="links">
+        <h3>Support</h3>
+        <ul>
+            <li>Frequently Asked Questions</li>
+            <li>Report a Payment Issue</li>
+            <li>Terms & Conditions</li>
+            <li>Privacy Policy</li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>

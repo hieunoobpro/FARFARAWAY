@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org"
+      th:replace="~{admin/layout/layout :: main-fragment(~{:: title}, ~{:: #css}, ~{:: .content-wrapper}, ~{:: #js})}">
+
+<head>
+    <title>Tạo bài viết</title>
+
+
+    <th:block id="css">
+        <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css"/>
+
+        <link rel="stylesheet" th:href="@{/admin-lte/plugins/select2/css/select2.min.css}"/>
+        <link rel="stylesheet" th:href="@{/admin-lte/dist/css/style.css}">
+    </th:block>
+
+</head>
+
+<body>
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-12">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="/admin/blogs">Dashboard</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="/admin/blogs">Blog</a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            Tạo bài viết
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row py-2">
+                <div class="col-6">
+                    <a href="/admin/blogs" type="button" class="btn btn-default">
+                        <i class="fas fa-chevron-left"></i> Quay lại
+                    </a>
+                    <button type="button" class="btn btn-info px-4" id="btn-create">
+                        Lưu
+                    </button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <form id="form-create-blog">
+                                        <div class="form-group">
+                                            <label>Tiêu đề</label>
+                                            <input type="text" class="form-control" id="title" name="title"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Mô tả ngắn</label>
+                                            <textarea id="description" class="form-control" rows="3" name="description"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Nội dung</label>
+                                            <textarea id="content" name="content"></textarea>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Trạng thái</label>
+                                        <select id="status" class="form-control">
+                                            <option value="false">
+                                                Nháp
+                                            </option>
+                                            <option value="true">
+                                                Công khai
+                                            </option>
+                                        </select>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<th:block id="js">
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/highlight.js/latest/highlight.min.js"></script>
+
+    <script th:src="@{/admin-lte/plugins/select2/js/select2.full.min.js}"></script>
+
+    <script>
+        //Initialize Select2 Elements
+        $(".select2").select2();
+
+        // Initialize editor
+        const easyMDE = new EasyMDE({
+            element: document.getElementById("content"),
+            spellChecker: false,
+            maxHeight: "300px",
+            renderingConfig: {
+                codeSyntaxHighlighting: true,
+            },
+        });
+
+        const contentEl = document.getElementById("content");
+        contentEl.style.display = "block";
+        contentEl.style.height = "0";
+        contentEl.style.padding = "0";
+        contentEl.style.border = "none";
+        easyMDE.codemirror.on("change", () => {
+            contentEl.value = easyMDE.value();
+        });
+
+        // Validate form
+        // Xử lý validate form
+        $('#form-create-blog').validate({
+            rules: {
+                title: {
+                    required: true
+                },
+                content: {
+                    required: true
+                },
+                description: {
+                    required: true
+                },
+            },
+            messages: {
+                title: {
+                    required: "Tên bài viết không được để trống"
+                },
+                content: {
+                    required: "Nội dung không được để trống"
+                },
+                description: {
+                    required: "Mô tả không được để trống"
+                },
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                console.log({error, element});
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+
+        // Tạo bài viết -> click button -> request -> response -> chuyển hướng qua trang chi tiết của bài viết đó
+        const btnCreate = document.getElementById("btn-create");
+        const title = document.getElementById("title");
+        const description = document.getElementById("description");
+        const status = document.getElementById("status");
+
+        btnCreate.addEventListener("click", async () => {
+            // validate form
+            if (!$('#form-create-blog').valid()) {
+                return;
+            }
+
+            // Build request body
+            const data = {
+
+                title: title.value,
+                description: description.value,
+                content: easyMDE.value(),
+                status: status.value === "true",
+
+            };
+            console.log(data);
+
+            try {
+                let res = await axios.post("/admin/blogs", data);
+                if (res.status === 200) {
+                    toastr.success("Tạo bài viết thành công");
+                    setTimeout(() => {
+                        window.location.href = `/admin/blogs/own-blogs`;
+                    }, 1500);
+                } else {
+                    toastr.error("Tạo bài viết thất bại");
+                }
+            } catch (e) {
+                console.log(e);
+                toastr.error(e.response.data.message);
+            }
+        });
+    </script>
+</th:block>
+
+</body>
+
+</html>

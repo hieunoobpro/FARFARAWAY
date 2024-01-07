@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" >
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/indexStyle.css" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/cosmo/bootstrap.min.css" />
+  <script src= "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" ></script>
+  <script src= "/javascrip/farJVS.js"></script>
+    <title th:text="${tour.name}">Title</title>
+</head>
+<body>
+<!--===========Nav Bar=================-->
+<section class="nav-bar">
+  <a href="/"><div class="logo">Far Far Away</div></a>
+  <ul class="menu">
+    <li><a href="/">home</a></li>
+    <li><a href="/tour">tours</a></li>
+    <li><a href="#">history</a></li>
+    <li><a href="/blog">blog</a></li>
+    <li><a href="#">contact us</a></li>
+    <li>
+      <th:block sec:authorize="not isAuthenticated()">
+        <a href="/login">Login</a>
+      </th:block>
+
+      <th:block sec:authorize="isAuthenticated()">
+        <div class="avatar-container">
+          <image th:src="${#authentication.principal.getAvatar()}" th:alt="Avatar" width="40" height="40" style="border-radius: 50%" onclick="toggleNavbar()" ></image>
+          <div class="vertical-navbar" id="verticalNavbar">
+            <ul>
+              <li><a href="/profile" style="color: #00bc8c">Hồ sơ</a></li>
+              <li>
+                <form th:action="@{/logout}" method="post">
+                  <button type="submit">Đăng xuất</button>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </th:block>
+    </li>
+
+  </ul>
+  </div>
+</section>
+
+<!--===========Container=================-->
+<section class="tour-detail">
+  <div class="tour-detail-text">
+    <small></small>
+    <h2>Tour Detail</h2>
+  </div>
+
+  <div class="zoom-img">
+    <div class="img-card">
+      <div th:if="${tour.picture != null}">
+        <img th:src="${tour.picture}" alt="picture">
+      </div>
+    </div>
+  </div>
+
+  <div class="text">
+    <span class="rating">⭐⭐⭐⭐⭐</span>
+    <h2 th:text="${tour.name}">The Dark Forest Adventure</h2>
+    <p class="cost" th:text="${tour.price}+'/person'"></p>
+    <div class="card-box">
+      <p class="location" th:text="${tour.category != null ? tour.category.name : 'none'}"></p>
+    </div>
+    <p class="location" th:text="${tour.description}">✈ Vancouver, Canada</p>
+    <p th:text="${tour.detail}">✈ Vancouver, Canada</p>
+<h2>Quý khách vui lòng điền vào form đăng ký dưới đây</h2>
+
+    <form action="/book-tour" method="post">
+      <label for="customerName">Your Name:</label>
+      <input type="text" id="customerName" name="customerName" required><br><br>
+      <input type="text" id="tourId" name="tourId" th:value="${tour.id}" hidden="hidden">
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required><br><br>
+
+      <label for="phone">Phone:</label>
+      <input type="tel" id="phone" name="phone" required><br><br>
+
+      <label for="numberOfGuests">Number of Guests:</label>
+      <input type="number" id="numberOfGuests" name="numberOfGuests" required><br><br>
+
+      <label for="date">Departure Date:</label>
+      <select id="date" name="date" required>
+        <option value="">Select Departure Date</option>
+        <!-- Use Thymeleaf to iterate over the departureDates and populate the options -->
+        <option th:each="departureDate : ${departureDates}"
+                th:value="${departureDate.departureDate}"
+                th:text="${#dates.format(departureDate.departureDate, 'dd MMMM yyyy')}">
+        </option>
+      </select><br><br>
+
+      <input type="submit" value="Book Tour">
+    </form>
+  </div>
+</section>
+<!--===========Footer=================-->
+<div class="footer">
+  <div class="links">
+    <h3>Quick Links</h3>
+    <ul>
+      <li>Offers & Discounts</li>
+      <li>Get Coupon</li>
+      <li>Contact Us</li>
+      <li>About</li>
+    </ul>
+  </div>
+  <div class="links">
+    <h3>New Products</h3>
+    <ul>
+      <li>Woman Cloth</li>
+      <li>Fashion Accessories</li>
+      <li>Man Accessories</li>
+      <li>Rubber made Toys</li>
+    </ul>
+  </div>
+  <div class="links">
+    <h3>Support</h3>
+    <ul>
+      <li>Frequently Asked Questions</li>
+      <li>Report a Payment Issue</li>
+      <li>Terms & Conditions</li>
+      <li>Privacy Policy</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/css/indexStyle.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/cosmo/bootstrap.min.css" />
+    <script src= "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" ></script>
+    <script src= "/javascrip/farJVS.js"></script>
+    <title>Title</title>
+
+    <style>
+
+        h1 {
+            color: #333;
+            font-size: 30px;
+            text-align: center;
+            margin-top: 30px;
+            text-transform: uppercase;
+        }
+
+        p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+<!--===========Nav Bar=================-->
+<section class="nav-bar">
+    <a href="/"><div class="logo">Far Far Away</div></a>
+    <ul class="menu">
+        <li><a href="/">home</a></li>
+        <li><a href="/tour">tours</a></li>
+        <li><a href="#">history</a></li>
+        <li><a href="/blog">blog</a></li>
+        <li><a href="#">contact us</a></li>
+        <li>
+            <th:block sec:authorize="not isAuthenticated()">
+                <a href="/login">Login</a>
+            </th:block>
+
+            <th:block sec:authorize="isAuthenticated()">
+                <div class="avatar-container">
+                    <image th:src="${#authentication.principal.getAvatar()}" th:alt="Avatar" width="40" height="40" style="border-radius: 50%" onclick="toggleNavbar()" ></image>
+                    <div class="vertical-navbar" id="verticalNavbar">
+                        <ul>
+                            <li><a href="/profile" style="color: #00bc8c">Hồ sơ</a></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post">
+                                    <button type="submit">Đăng xuất</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </th:block>
+        </li>
+
+    </ul>
+    </div>
+</section>
+
+<!--===========Contentr=================-->
+<div class="content">
+    <h1 th:text="${blog.title}"></h1>
+    <div th:if="${blog.thumbnail != null}">
+        <img th:src="${blog.thumbnail}" alt="Thumbnail">
+    </div>
+    <p th:text="${blog.description}"></p>
+    <p th:text="${blog.content}"></p>
+    <p>Published at: <span th:text="${blog.publishedAt}"></span></p>
+
+    <h2>Comments</h2>
+    <ul>
+        <li th:each="comment : ${blog.comments}">
+            <p><span th:text="${comment.user.name}"></span>: <span th:text="${comment.content}"></span></p>
+            <p th:text="${#temporals.format(comment.createdAt, 'dd/MM/yyyy HH:mm:ss')}"></p>
+            <div th:if="${#authentication.principal.username eq comment.user.email}">
+                <button th:onclick ="|editComment(${comment.id})|">Edit</button>
+                <textarea th:id="|editTextarea_${comment.id}|" style="display: none;"></textarea>
+                <button th:onclick ="|saveEditedComment(${comment.id})|" style="display: none;">Save</button>
+                <button th:onclick="|deleteComment(${comment.id})|">Delete</button>
+            </div>
+        </li>
+    </ul>
+    <!-- Add a new comment form -->
+    <form th:action="@{/comments}" method="post">
+        <input type="hidden" name="blogId" th:value="${blog.id}" />
+        <textarea name="text" placeholder="Add a comment"></textarea>
+        <button type="submit">Submit</button>
+    </form>
+</div>
+<!--===========Footer=================-->
+<div class="footer">
+    <div class="links">
+        <h3>Quick Links</h3>
+        <ul>
+            <li>Offers & Discounts</li>
+            <li>Get Coupon</li>
+            <li>Contact Us</li>
+            <li>About</li>
+        </ul>
+    </div>
+    <div class="links">
+        <h3>New Products</h3>
+        <ul>
+            <li>Woman Cloth</li>
+            <li>Fashion Accessories</li>
+            <li>Man Accessories</li>
+            <li>Rubber made Toys</li>
+        </ul>
+    </div>
+    <div class="links">
+        <h3>Support</h3>
+        <ul>
+            <li>Frequently Asked Questions</li>
+            <li>Report a Payment Issue</li>
+            <li>Terms & Conditions</li>
+            <li>Privacy Policy</li>
+        </ul>
+    </div>
+</div>
+<script th:inline="javascript">
+    function editComment(commentId) {
+    document.getElementById('editTextarea_' + commentId).style.display = 'block';
+    document.querySelector('button[onclick="editComment(' + commentId + ')"]').style.display = 'none';
+    document.querySelector('button[onclick="saveEditedComment(' + commentId + ')"]').style.display = 'block';
+}
+
+function saveEditedComment(commentId) {
+    var editedText = document.getElementById('editTextarea_' + commentId).value;
+    fetch('/comments/' + commentId, {
+        method: 'PUT', // Sử dụng method PUT để cập nhật comment
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: editedText }) // Gửi nội dung chỉnh sửa
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            // Cập nhật nội dung comment trên giao diện người dùng
+            document.querySelector('p[id="comment_' + commentId + '"]').innerText = editedText;
+            // Ẩn textarea và hiển thị lại nút Edit
+            document.getElementById('editTextarea_' + commentId).style.display = 'none';
+            document.querySelector('button[onclick="editComment(' + commentId + ')"]').style.display = 'block';
+            document.querySelector('button[onclick="saveEditedComment(' + commentId + ')"]').style.display = 'none';
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+    // Ẩn textarea và hiển thị lại nút Edit
+    document.getElementById('editTextarea_' + commentId).style.display = 'none';
+    document.querySelector('button[onclick="editComment(' + commentId + ')"]').style.display = 'block';
+    document.querySelector('button[onclick="saveEditedComment(' + commentId + ')"]').style.display = 'none';
+}
+
+
+function deleteComment(commentId) {
+    if (confirm('Are you sure you want to delete this comment?')) {
+        fetch('/api/comments/' + commentId, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                // Xóa comment khỏi giao diện sau khi xóa thành công
+                document.getElementById('comment_' + commentId).remove();
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    } else {
+        return false;
+    }
+}
+</script>
+</body>
+</html>
